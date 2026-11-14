@@ -869,6 +869,8 @@ class BossEnemy extends Enemy {
     this.pattern = 0;
     this.patternTimer = 6;
     this.contactCd = 0;
+    /* own clock for entry→sway so position stays continuous (this.t starts random) */
+    this.moveT = 0;
   }
   update(dt) {
     this.updateCommon(dt);
@@ -877,8 +879,9 @@ class BossEnemy extends Enemy {
       this.advanceEntry(dt, 95);
       this.x = VIEW_W / 2;
     } else {
-      this.x = VIEW_W / 2 + Math.sin(this.t * 0.55) * (VIEW_W / 2 - 150);
-      this.y = this.homeY + Math.sin(this.t * 1.3) * 22;
+      this.moveT += dt;
+      this.x = VIEW_W / 2 + Math.sin(this.moveT * 0.55) * (VIEW_W / 2 - 150);
+      this.y = this.homeY + Math.sin(this.moveT * 1.3) * 22;
     }
 
     this.contactCd = Math.max(0, this.contactCd - dt);
