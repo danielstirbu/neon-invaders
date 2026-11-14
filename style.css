@@ -1,0 +1,150 @@
+/* ============================================================
+   NEON INVADERS — synthwave / neon cyberpunk visual layer.
+   Tailwind (CDN) handles layout utilities; this file adds the
+   neon glow, panels, buttons and CRT overlays.
+   ============================================================ */
+
+:root {
+  --cyan: #00f0ff;
+  --magenta: #ff2bd6;
+  --violet: #b026ff;
+  --lime: #39ff14;
+  --amber: #ffb300;
+  --void: #070317;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at 50% 120%, #1b0b3a 0%, var(--void) 62%);
+}
+
+/* Ambient grid floor behind everything */
+.game-shell::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 38vh;
+  background-image:
+    linear-gradient(transparent 0%, rgba(176, 38, 255, 0.14) 100%),
+    repeating-linear-gradient(90deg, rgba(0, 240, 255, 0.16) 0 1px, transparent 1px 64px),
+    repeating-linear-gradient(0deg, rgba(255, 43, 214, 0.16) 0 1px, transparent 1px 44px);
+  transform: perspective(420px) rotateX(62deg);
+  transform-origin: bottom center;
+  pointer-events: none;
+  opacity: 0.55;
+  animation: grid-scroll 9s linear infinite;
+}
+
+@keyframes grid-scroll {
+  from { background-position: 0 0, 0 0, 0 0; }
+  to   { background-position: 0 0, 0 44px, 0 44px; }
+}
+
+/* The game canvas: neon frame + bloom */
+.game-canvas {
+  display: block;
+  max-width: 98vw;
+  max-height: 96vh;
+  width: auto;
+  height: auto;
+  aspect-ratio: 960 / 600;
+  background: #05020f;
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  border-radius: 10px;
+  box-shadow:
+    0 0 18px rgba(0, 240, 255, 0.35),
+    0 0 60px rgba(176, 38, 255, 0.25),
+    inset 0 0 80px rgba(9, 2, 30, 0.9);
+  image-rendering: auto;
+}
+
+/* CRT scanlines + vignette above everything */
+.crt-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.16) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at center, transparent 58%, rgba(2, 0, 10, 0.55) 100%);
+  mix-blend-mode: multiply;
+}
+
+/* Glassy neon panels (overlay screens, badges) */
+.overlay-panel {
+  background: linear-gradient(160deg, rgba(18, 8, 45, 0.92), rgba(7, 3, 23, 0.94));
+  border: 1px solid rgba(0, 240, 255, 0.28);
+  box-shadow:
+    0 0 24px rgba(0, 240, 255, 0.18),
+    0 0 90px rgba(176, 38, 255, 0.16),
+    inset 0 0 40px rgba(0, 240, 255, 0.05);
+  backdrop-filter: blur(6px);
+}
+
+.overlay-panel.hidden, .hidden { display: none !important; }
+
+/* Glow text helpers */
+.glow-title { text-shadow: 0 0 10px rgba(0, 240, 255, 0.75), 0 0 34px rgba(0, 240, 255, 0.35); }
+.glow-magenta { text-shadow: 0 0 10px rgba(255, 43, 214, 0.8), 0 0 36px rgba(255, 43, 214, 0.4); }
+.glow-amber { text-shadow: 0 0 10px rgba(255, 179, 0, 0.85), 0 0 30px rgba(255, 179, 0, 0.4); }
+
+/* HUD chips & stat boxes on start/over screens */
+.hud-chip {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.stat-box {
+  padding: 10px 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+/* Neon buttons */
+.btn-neon {
+  color: #eafcff;
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.16), rgba(255, 43, 214, 0.16));
+  border: 1px solid rgba(0, 240, 255, 0.65);
+  border-radius: 12px;
+  cursor: pointer;
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.7);
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.28), inset 0 0 18px rgba(0, 240, 255, 0.08);
+  transition: transform 120ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+.btn-neon:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 26px rgba(0, 240, 255, 0.55), 0 0 60px rgba(255, 43, 214, 0.28);
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.28), rgba(255, 43, 214, 0.26));
+}
+.btn-neon:active { transform: translateY(0) scale(0.98); }
+
+.btn-ghost {
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 12px;
+  cursor: pointer;
+  background: transparent;
+  transition: border-color 160ms ease, color 160ms ease, transform 120ms ease;
+}
+.btn-ghost:hover { border-color: var(--magenta); color: var(--magenta); transform: translateY(-2px); }
+
+/* Subtle title flicker like a failing neon tube */
+.glow-title, .glow-magenta { animation: neon-flicker 6s infinite steps(1); }
+@keyframes neon-flicker {
+  0%, 94%, 97%, 100% { opacity: 1; }
+  95% { opacity: 0.72; }
+  96% { opacity: 0.9; }
+  98.5% { opacity: 0.8; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-shell::before, .glow-title, .glow-magenta { animation: none; }
+}

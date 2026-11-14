@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="NEON INVADERS — synthwave space shooter: valuri, mini-boși, power-up-uri, Web Audio API." />
+  <meta name="theme-color" content="#070317" />
+  <title>NEON INVADERS — Synthwave Space Shooter</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3l12 26-12-7-12 7z' fill='%2300f0ff'/%3E%3C/svg%3E" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            void: "#070317",
+            abyss: "#0d0724",
+            neoncyan: "#00f0ff",
+            neonmagenta: "#ff2bd6",
+            neonviolet: "#b026ff",
+            neongreen: "#39ff14",
+            neonamber: "#ffb300",
+          },
+          fontFamily: {
+            display: ["Orbitron", "ui-sans-serif", "system-ui", "sans-serif"],
+            tech: ["Share Tech Mono", "ui-monospace", "SFMono-Regular", "monospace"],
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-void text-white font-tech overflow-hidden select-none antialiased">
+  <div class="crt-vignette"></div>
+
+  <main class="relative w-screen h-screen flex items-center justify-center game-shell">
+    <div id="stage" class="relative w-full h-full flex items-center justify-center">
+      <canvas id="game" class="game-canvas" width="960" height="600" aria-label="Neon Invaders game canvas"></canvas>
+
+      <div id="overlay" class="absolute inset-0 flex items-center justify-center z-30">
+
+        <section id="screen-start" class="screen text-center px-6 py-10 rounded-2xl overlay-panel max-w-2xl w-full">
+          <h1 class="font-display font-black tracking-[0.12em] text-5xl md:text-6xl leading-none glow-title">
+            <span class="text-neoncyan">NEON</span> <span class="text-neonmagenta glow-magenta">INVADERS</span>
+          </h1>
+          <p class="mt-4 text-sm md:text-base text-white/70 tracking-widest uppercase">Synthwave space defense protocol</p>
+
+          <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3 text-left text-xs md:text-sm text-white/80">
+            <div class="hud-chip"><span class="text-neongreen font-bold">&#8592; &#8594; / A D</span><span class="text-white/50 ml-2">Miscare nava</span></div>
+            <div class="hud-chip"><span class="text-neongreen font-bold">SPATIU</span><span class="text-white/50 ml-2">Tragere continua</span></div>
+            <div class="hud-chip"><span class="text-neongreen font-bold">SHIFT</span><span class="text-white/50 ml-2">Dash (impuls rapid)</span></div>
+            <div class="hud-chip"><span class="text-neongreen font-bold">P / ESC</span><span class="text-white/50 ml-2">Pauza</span></div>
+            <div class="hud-chip"><span class="text-neongreen font-bold">M</span><span class="text-white/50 ml-2">Mut audio</span></div>
+            <div class="hud-chip"><span class="text-neongreen font-bold">COMBO</span><span class="text-white/50 ml-2">Ucideri rapide = puncte x</span></div>
+          </div>
+
+          <button id="btn-start" class="btn-neon mt-9 font-display font-bold text-lg px-12 py-4 tracking-[0.25em]">PORNESTE</button>
+          <p class="mt-6 text-xs text-white/40 tracking-widest">HIGH SCORE: <span id="hs-start" class="text-neonamber">0</span></p>
+        </section>
+
+        <section id="screen-over" class="screen hidden text-center px-6 py-10 rounded-2xl overlay-panel max-w-xl w-full">
+          <h2 class="font-display font-black tracking-[0.2em] text-4xl md:text-5xl text-neonmagenta glow-magenta">SISTEM DISTRUS</h2>
+          <div class="mt-8 grid grid-cols-3 gap-3 text-center">
+            <div class="stat-box"><div class="text-white/50 text-[10px] tracking-widest">SCOR</div><div id="final-score" class="font-display text-2xl text-neoncyan">0</div></div>
+            <div class="stat-box"><div class="text-white/50 text-[10px] tracking-widest">VAL</div><div id="final-wave" class="font-display text-2xl text-neongreen">1</div></div>
+            <div class="stat-box"><div class="text-white/50 text-[10px] tracking-widest">COMBO MAX</div><div id="final-combo" class="font-display text-2xl text-neonamber">x1</div></div>
+          </div>
+          <p id="new-record" class="hidden mt-6 font-display tracking-[0.3em] text-neonamber glow-amber animate-pulse">&#10022; RECORD NOU &#10022;</p>
+          <div class="mt-9 flex flex-wrap justify-center gap-4">
+            <button id="btn-restart" class="btn-neon font-display font-bold px-10 py-3 tracking-[0.2em]">REINCEARCE</button>
+            <button id="btn-menu" class="btn-ghost font-display font-bold px-10 py-3 tracking-[0.2em]">MENIU</button>
+          </div>
+        </section>
+      </div>
+
+      <div id="pause-badge" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 px-10 py-5 rounded-xl overlay-panel text-center pointer-events-none">
+        <p class="font-display text-2xl tracking-[0.35em] text-neoncyan glow-title">PAUZA</p>
+        <p class="text-[11px] text-white/50 mt-2 tracking-widest">apasa P pentru a continua</p>
+      </div>
+
+      <div id="mute-badge" class="hidden absolute top-3 right-3 z-20 px-3 py-1 rounded overlay-panel text-[11px] tracking-widest text-white/70 pointer-events-none">MUTE (M)</div>
+    </div>
+  </main>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
