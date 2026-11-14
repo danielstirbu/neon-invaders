@@ -55,6 +55,8 @@ const Input = {
     window.addEventListener('blur', () => this.keys.clear());
   },
   down(k) { return this.keys.has(k); },
+  vpress(k) { if (!this.keys.has(k)) this.pressed.add(k); this.keys.add(k); },
+  vrelease(k) { this.keys.delete(k); },
   hit(k) {
     if (this.pressed.has(k)) { this.pressed.delete(k); return true; }
     return false;
@@ -1517,6 +1519,62 @@ Enemy.prototype.atY = function (y) { this.homeY = y; return this; };
 /* ------------------------------------------------------------------ */
 /* UI wiring + main loop                                               */
 /* ------------------------------------------------------------------ */
+const TouchControls = {
+  isTouch: false,
+  box: null,
+  init(game) {
+    this.isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+    this.box = document.getElementById('touch-controls');
+    if (!this.isTouch) {
+      this.box.classList.add('hidden');
+      return;
+    }
+    const hold = (id, key) => {
+      const el = document.getElementById(id);
+      el.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        try { el.setPointerCapture(e.pointerId); } catch (err) { /* synthetic event */ }
+        el.classList.add('pressed');
+        Input.vpress(key);
+      });
+      const up = () => { el.classList.remove('pressed'); Input.vrelease(key); };
+      el.addEventListener('pointerup', up);
+      el.addEventListener('pointercancel', up);
+      el.addEventListener('lostpointercapture', up);
+    };
+    hold('tc-left', 'arrowleft');
+    hold('tc-right', 'arrowright');
+    hold('tc-fire', ' ');
+    const tap = (id, fn) => {
+      const el = document.getElementById(id);
+      el.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        el.classList.add('pressed');
+        fn();
+      });
+      const up = () => el.classList.remove('pressed');
+      el.addEventListener('pointerup', up);
+      el.addEventListener('pointercancel', up);
+      el.addEventListener('lostpointercapture', up);
+    };
+    tap('tc-dash', () => Input.pressed.add('shift'));
+    tap('tc-pause', () => {
+      if (game.state === STATE.PLAYING || game.state === STATE.PAUSED) game.togglePause();
+    });
+    tap('tc-mute', () => this.toggleMute(game));
+  },
+  toggleMute(game) {
+    const m = !game.audio.muted;
+    game.audio.setMuted(m);
+    document.getElementById('mute-badge').classList.toggle('hidden', !m);
+  },
+  sync(game) {
+    if (!this.isTouch) return;
+    const show = game.state === STATE.PLAYING || game.state === STATE.PAUSED;
+    this.box.classList.toggle('hidden', !show);
+  },
+};
+
 const UI = {
   els: {},
   game: null,
@@ -1541,6 +1599,7 @@ const UI = {
     this.els.btnStart.addEventListener('click', () => this.game.startRun());
     this.els.btnRestart.addEventListener('click', () => this.game.startRun());
     this.els.btnMenu.addEventListener('click', () => this.game.toMenu());
+    TouchControls.init(game);
     this.refreshHigh(game.high);
     this.showScreen('start');
 
@@ -1581,9 +1640,13 @@ const UI = {
 
 /* canvas scaling: keep internal 960x600, fit viewport via CSS */
 function fitCanvas(canvas) {
-  const shell = canvas.parentElement;
-  const availW = shell.clientWidth * 0.98;
-  const availH = shell.clientHeight * 0.98;
+  /* pin the shell to the real visible viewport: innerHeight excludes the
+     Android toolbar, unlike 100vh/dvh edge cases */
+  const shell = document.querySelector('.game-shell');
+  if (shell) shell.style.height = `${window.innerHeight}px`;
+  const stage = canvas.parentElement;
+  const availW = stage.clientWidth * 0.98;
+  const availH = stage.clientHeight * 0.98;
   const scale = Math.min(availW / VIEW_W, availH / VIEW_H);
   canvas.style.width = `${Math.floor(VIEW_W * scale)}px`;
   canvas.style.height = `${Math.floor(VIEW_H * scale)}px`;
@@ -1597,6 +1660,7 @@ function frame(now) {
   game.update(dt);
   game.draw(game.ctx);
   UI.syncPause(game);
+  TouchControls.sync(game);
   Input.endFrame();
   requestAnimationFrame(frame);
 }

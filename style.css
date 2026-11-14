@@ -148,3 +148,77 @@ html, body {
 @media (prefers-reduced-motion: reduce) {
   .game-shell::before, .glow-title, .glow-magenta { animation: none; }
 }
+
+/* mobile viewport fix: on Android Chrome 100vh includes the area behind the
+   URL bar (large viewport), pushing bottom-pinned controls off screen */
+.game-shell { height: 100vh !important; }
+@supports (height: 100dvh) {
+  .game-shell { height: 100dvh !important; }
+}
+
+/* ---------- Touch controls (shown only on touch devices) ---------- */
+.touch-controls {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+}
+.touch-controls.hidden { display: none !important; }
+
+.touch-btn {
+  position: absolute;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Orbitron", sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: rgba(234, 252, 255, 0.85);
+  background: rgba(10, 4, 32, 0.45);
+  border: 1.5px solid rgba(0, 240, 255, 0.5);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.22), inset 0 0 12px rgba(0, 240, 255, 0.07);
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.touch-btn.pressed {
+  background: rgba(0, 240, 255, 0.28);
+  box-shadow: 0 0 22px rgba(0, 240, 255, 0.6), inset 0 0 16px rgba(0, 240, 255, 0.2);
+  transform: scale(0.94);
+}
+#tc-left  { left: 14px; }
+#tc-right { left: 80px; }
+#tc-fire  { right: 14px; width: 76px; height: 76px; font-size: 15px;
+            border-color: rgba(255, 43, 214, 0.6); box-shadow: 0 0 14px rgba(255, 43, 214, 0.28), inset 0 0 12px rgba(255, 43, 214, 0.1); }
+#tc-fire.pressed { background: rgba(255, 43, 214, 0.3); box-shadow: 0 0 22px rgba(255, 43, 214, 0.6); }
+#tc-dash  { right: 98px; width: 54px; height: 54px; font-size: 10px;
+            bottom: calc(22px + env(safe-area-inset-bottom));
+            border-color: rgba(57, 255, 20, 0.55); box-shadow: 0 0 12px rgba(57, 255, 20, 0.2); }
+#tc-dash.pressed { background: rgba(57, 255, 20, 0.25); }
+
+.touch-mini {
+  position: absolute;
+  top: calc(8px + env(safe-area-inset-top));
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(10, 4, 32, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+#tc-pause { left: 8px; }
+#tc-mute  { left: 50px; }
